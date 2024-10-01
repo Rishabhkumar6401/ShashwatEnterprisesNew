@@ -8,8 +8,8 @@ const User = require("../../models/User");
 const transporter = nodemailer.createTransport({
   service: "gmail", // Use your email service
   auth: {
-    user: "rishabh6401@gmail.com", // Your email address
-    pass: "jumelvncoskjzssb", // Your email password (consider using environment variables)
+    user: "gozoomtechnologies@gmail.com", // Your email address
+    pass: "qwuyqyxwiystcbhf", // Your email password (consider using environment variables)
   },
 });
 
@@ -58,8 +58,8 @@ const orderPlacedBy = salesmanId && salesmanDetails
 
     // Prepare the email content
     const mailOptions = { 
-      from: "rishabh6401@gmail.com",
-      to: "rishabh1913110@akgec.ac.in", // Admin email address
+      from: "gozoomtechnologies@gmail.com",
+      to: "shashwatmbd@gmail.com", // Admin email address
       subject: `New Order Received - Order ID: ${newlyCreatedOrder._id}`,
       html: `
         <h1>New Order Details</h1>
@@ -76,7 +76,7 @@ const orderPlacedBy = salesmanId && salesmanDetails
             )
             .join("")}
         </ul>
-        <p>Thank you for using our service!</p>
+        <p>Thank you for using our service @Shashwat Enterprises!</p>
       `,
     };
 

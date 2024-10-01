@@ -68,6 +68,14 @@ function AuthLogin() {
             Register
           </Link>
         </p>
+        <p className="mt-2">
+          <Link
+            className="font-medium text-primary hover:underline"
+            to="/auth/forgot"
+          >
+            Forgot Password?
+          </Link>
+        </p>
       </div>
       <CommonForm
         formControls={loginFormControls}

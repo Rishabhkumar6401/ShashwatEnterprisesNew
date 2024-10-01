@@ -31,6 +31,7 @@ import Shop from "./pages/salesman/shop";
 import CreateShop from "./pages/salesman/CreateShop";
 import SalesmenPage from "./pages/admin-view/salesmen";
 import Beats from "./pages/admin-view/beats";
+import ForgotPassword from "./pages/auth/forget";
 
 function App() {
   const { user, isAuthenticated, isLoading } = useSelector(
@@ -67,6 +68,7 @@ function App() {
         >
           <Route path="login" element={<AuthLogin />} />
           <Route path="register" element={<AuthRegister />} />
+          <Route path="forgot" element={<ForgotPassword />} />
         </Route>
         <Route
           path="/admin"

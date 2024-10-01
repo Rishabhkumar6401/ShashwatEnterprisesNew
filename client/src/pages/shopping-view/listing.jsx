@@ -41,7 +41,6 @@ function ShoppingListing() {
   const { productList, productDetails, currentPage, hasMore, isLoading } = useSelector(
     (state) => state.shopProducts
   );
-  console.log(productList)
   const { cartItems } = useSelector((state) => state.shopCart);
   const { user } = useSelector((state) => state.auth);
   const [filters, setFilters] = useState({});
@@ -255,6 +254,10 @@ function ShoppingListing() {
     return () => window.removeEventListener("scroll", handleScroll); // Clean up on component unmount
   }, [hasMore, isLoading]);
 
+  useEffect(() => {
+    if (productDetails !== null) setOpenDetailsDialog(true);
+  }, [productDetails]);
+
   
 
   return (
@@ -322,10 +325,11 @@ function ShoppingListing() {
           )}
         </div>
       </div>
+      {console.log(productDetails)}
       <ProductDetailsDialog
         open={openDetailsDialog}
         setOpen={setOpenDetailsDialog}
-        product={productDetails}
+        productDetails={productDetails}
       />
     </div>
   );

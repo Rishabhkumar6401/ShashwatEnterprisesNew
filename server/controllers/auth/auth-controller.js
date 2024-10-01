@@ -2,6 +2,11 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../../models/User");
 const Cart = require("../../models/Cart")
+const unirest = require("unirest");
+const Otp = require("../../models/Otp")
+
+const fast2smsApiKey = "nKnWsfTWXZcASRNn4YZgDoEOw1MDMeFbXc6lOqEoSBYMFk2ejuozZOacsOSz";
+
 
 //register
 const registerUser = async (req, res) => {
@@ -98,6 +103,94 @@ const loginUser = async (req, res) => {
   }
 };
 
+// Request OTP and store in MongoDB
+const requestOtp = async (req, res) => {
+  const { phoneNo } = req.body;
+
+  // Generate a 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Set OTP expiration time (5 minutes from now)
+  const expirationTime = new Date(Date.now() + 5 * 60000);
+
+  // Create or update OTP record in the database
+  try {
+    // Check if there's already an OTP for this phoneNo, then update it
+    let existingOtp = await Otp.findOne({ phoneNo });
+    if (existingOtp) {
+      existingOtp.otp = otp;
+      existingOtp.expirationTime = expirationTime;
+      await existingOtp.save();
+    } else {
+      // Create a new OTP document
+      const newOtp = new Otp({
+        phoneNo,
+        otp,
+        expirationTime,
+      });
+      await newOtp.save();
+    }
+
+    // Define the message with the custom business name (Shashwat Enterprises) and phone number format (+51)
+    const message = `Your OTP for Shashwat Enterprises is: ${otp}`;
+
+    // Send the OTP via Fast2SMS API
+    const reqSms = unirest("POST", "https://www.fast2sms.com/dev/bulkV2");
+    reqSms.headers({
+      authorization: fast2smsApiKey, // Ensure API key is loaded from environment variables
+    });
+    reqSms.form({
+      message: message,
+      language: "english",
+      route: "q",
+      numbers: phoneNo, // Send OTP to the provided phone number
+    });
+
+    reqSms.end(function (response) {
+      if (response.error) {
+        console.error(response.error);
+        return res.status(500).json({ success: false, message: "Failed to send OTP" });
+      }
+
+      console.log(response.body);
+      res.json({ success: true, message: "OTP sent successfully!" });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to store OTP" });
+  }
+};
+
+// Verify OTP and update passwor
+const verifyOtp = async (req, res) => {
+  const { phoneNo, otp, newPassword } = req.body;
+
+  try {
+    // Fetch OTP record from MongoDB
+    const otpRecord = await Otp.findOne({ phoneNo });
+
+    // Check if OTP exists and is still valid
+    if (!otpRecord || String(otpRecord.otp) !== String(otp) || otpRecord.expirationTime < new Date()) {
+      return res.json({ success: false, message: "Invalid or expired OTP" });
+    }
+
+    // Find the user by phone number and update password
+    const user = await User.findOne({ phoneNo });
+    if (!user) return res.json({ success: false, message: "User not found" });
+     user.password = newPassword; // Ensure to hash the password in production
+     await user.save();
+
+    // Remove the OTP from the database after successful verification
+    await Otp.deleteOne({ phoneNo });
+
+    res.json({ success: true, message: "Password updated successfully!" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to update password" });
+  }
+};
+
+
 //logout
 
 const logoutUser = (req, res) => {
@@ -128,4 +221,5 @@ const authMiddleware = async (req, res, next) => {
   }
 };
 
-module.exports = { registerUser, loginUser, logoutUser, authMiddleware };
+module.exports = { registerUser, loginUser, logoutUser, authMiddleware,requestOtp,
+  verifyOtp, };

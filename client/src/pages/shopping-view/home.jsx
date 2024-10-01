@@ -1,26 +1,8 @@
+import React, { memo } from 'react';
 import { Button } from "@/components/ui/button";
-import bannerOne from "../../assets/banner-1.webp";
-import bannerTwo from "../../assets/banner-2.webp";
-import bannerThree from "../../assets/banner-3.webp";
 import { GiChocolateBar } from "react-icons/gi";
 import { getAllBrands} from '@/store/admin/brands-slice'; // Adjust path based on your structure
 import { getAllCategories } from '@/store/admin/category-slice';
-import {
-  CupSoda,
-  Lollipop ,
-  Torus,
-  Salad
-} from "lucide-react";
-import Shadani from "../../assets/shadani1.png"; // Corrected import
-import Zubi from "../../assets/zubib1.webp"; // Corrected import
-import Vpure from "../../assets/vpure.png"; // Corrected import
-import Roasty from "../../assets/rosty.png"; // Corrected import
-import Skippi from "../../assets/skippi.png"; // Corrected import
-import Sunbeam from "../../assets/sunbeams.png"; // Corrected import
-import Imported from "../../assets/imported.png"; // Corrected import
-import Gourmet from "../../assets/gourmet.png"; // Corrected import
-import  FavFood from "../../assets/fav.png"; // Corrected import
-import  Chocozay from "../../assets/chocozys.png"; // Corrected import
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -205,7 +187,9 @@ function ShoppingHome() {
 
   return (
     
+    
     <div className="flex flex-col min-h-screen p-3 mt-16">
+      {console.log("Hi")}
      <div className="relative w-full h-[190px] sm:h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden ">
   {featureImageList && featureImageList.length > 0
     ? featureImageList.map((slide, index) => (
