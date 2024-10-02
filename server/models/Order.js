@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const OrderSchema = new mongoose.Schema({
   userId: String,
-  salesmanId:String,
+  salesmanId: String,
   cartId: String,
   cartItems: [
     {
@@ -15,7 +15,7 @@ const OrderSchema = new mongoose.Schema({
   ],
   addressInfo: {
     addressId: String,
-    shopName:String,
+    shopName: String,
     address: String,
     phone: String,
     notes: String,
@@ -26,6 +26,16 @@ const OrderSchema = new mongoose.Schema({
   totalAmount: Number,
   orderDate: Date,
   orderUpdateDate: Date,
+  location: {
+    latitude: {
+      type: Number,
+      required: true,
+    },
+    longitude: {
+      type: Number,
+      required: true,
+    },
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Order", OrderSchema);

@@ -27,7 +27,19 @@ const createOrder = async (req, res) => {
       orderDate,
       orderUpdateDate,
       cartId,
+      location: {
+        latitude,
+        longitude,
+      },
     } = req.body;
+
+
+    if (!latitude || !longitude) {
+      return res.status(400).json({
+        success: false,
+        message: 'Location (latitude and longitude) is required',
+      });
+    }
 
    
 
@@ -44,6 +56,10 @@ const createOrder = async (req, res) => {
       totalAmount,
       orderDate,
       orderUpdateDate,
+      location: {
+        latitude,
+        longitude,
+      },
     });
 
     await newlyCreatedOrder.save();
@@ -55,6 +71,9 @@ const createOrder = async (req, res) => {
 const orderPlacedBy = salesmanId && salesmanDetails
 ? `Salesman: ${salesmanDetails.userName}, Phone: ${salesmanDetails.phoneNo}`
 : 'Shop Owner';
+
+const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+
 
     // Prepare the email content
     const mailOptions = { 
@@ -68,6 +87,9 @@ const orderPlacedBy = salesmanId && salesmanDetails
         <p><strong>Shop Name:</strong> ${addressInfo.shopName}</p>
         <p><strong>Delivery Address:</strong> ${addressInfo.address}</p>
         <p><strong>Contact:</strong> ${addressInfo.phone}</p>
+         <p><strong>Location:</strong> 
+          <a href="${googleMapsUrl}" target="_blank">View on Google Maps</a>
+        </p>
         <h2>Cart Items</h2>
         <ul>
           ${cartItems
