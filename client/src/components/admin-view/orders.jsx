@@ -18,21 +18,24 @@ import {
   resetOrderDetails,
 } from "@/store/admin/order-slice";
 import { Badge } from "../ui/badge";
+import Loader from "../Loader"; // Import your Loader component
 
 function AdminOrdersView() {
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Loading state
   const { orderList, orderDetails } = useSelector((state) => state.adminOrder);
   const dispatch = useDispatch();
 
   function handleFetchOrderDetails(getId) {
-    dispatch(getOrderDetailsForAdmin(getId));
+    setIsLoading(true); // Start loading
+    dispatch(getOrderDetailsForAdmin(getId)).finally(() => {
+      setIsLoading(false); // End loading after fetch
+    });
   }
 
   useEffect(() => {
     dispatch(getAllOrdersForAdmin());
   }, [dispatch]);
-
- 
 
   useEffect(() => {
     if (orderDetails !== null) setOpenDetailsDialog(true);
@@ -59,7 +62,7 @@ function AdminOrdersView() {
           <TableBody>
             {orderList && orderList.length > 0
               ? orderList.map((orderItem) => (
-                  <TableRow>
+                  <TableRow key={orderItem?._id}>
                     <TableCell>{orderItem?._id}</TableCell>
                     <TableCell>{orderItem?.orderDate.split("T")[0]}</TableCell>
                     <TableCell>
@@ -91,7 +94,12 @@ function AdminOrdersView() {
                         >
                           View Details
                         </Button>
-                        <AdminOrderDetailsView orderDetails={orderDetails} />
+                        {isLoading && ( // Show Loader while loading
+                          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
+                            <Loader /> {/* Show your Loader component */}
+                          </div>
+                        )}
+                        {!isLoading && <AdminOrderDetailsView orderDetails={orderDetails} />}
                       </Dialog>
                     </TableCell>
                   </TableRow>

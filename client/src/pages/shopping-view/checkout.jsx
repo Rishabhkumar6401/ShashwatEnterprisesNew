@@ -32,74 +32,104 @@ function ShoppingCheckout() {
         )
       : 0;
 
-  function handlePlaceOrder() {
-    if (cartItems.length === 0) {
-      toast({
-        title: "Your cart is empty. Please add items to proceed",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (currentSelectedAddress === null) {
-      toast({
-        title: "Please select one address to proceed.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const salesmanId = localStorage.getItem('salesmanId') || null;
-
-    const orderData = {
-      userId: user?.id,
-      salesmanId: salesmanId || null,
-      cartId: cartItems?._id,
-      cartItems: cartItems.items.map((singleCartItem) => ({
-        productId: singleCartItem?.productId,
-        title: singleCartItem?.title,
-        image: singleCartItem?.image,
-        price: singleCartItem?.salePrice > 0
-          ? singleCartItem?.salePrice
-          : singleCartItem?.price,
-        quantity: singleCartItem?.quantity,
-      })),
-      addressInfo: {
-        addressId: currentSelectedAddress?._id,
-        shopName: user?.userName,
-        address: currentSelectedAddress?.address,
-        phone: currentSelectedAddress?.phone,
-        notes: currentSelectedAddress?.notes,
-      },
-      orderStatus: "pending",
-      paymentMethod: "cash-on-delivery",
-      paymentStatus: "pending",
-      totalAmount: totalCartAmount,
-      orderDate: new Date(),
-      orderUpdateDate: new Date(),
-    };
-
-    setIsLoading(true); // Start loading
-
-    dispatch(createNewOrder(orderData)).then((data) => {
-      setIsLoading(false); // End loading
-      if (data?.payload?.success) {
-        toast({
-          title: "Order placed successfully! An email has been sent to the admin.",
-          variant: "success",
-        });
-        // Clear the cart both from the database and state
-        dispatch(clearCartFromDB(user?.id)); // Call the thunk to clear the cart from DB
-        dispatch(clearCart()); // Clear the cart in Redux state
-        // Redirect to Order Success Page
-        navigate("/shop/orderSuccess");
-      } else {
-        toast({
-          title: "Order placement failed. Please try again.",
-          variant: "destructive",
-        });
+      function handlePlaceOrder() {
+        if (cartItems.length === 0) {
+          toast({
+            title: "Your cart is empty. Please add items to proceed",
+            variant: "destructive",
+          });
+          return;
+        }
+        if (currentSelectedAddress === null) {
+          toast({
+            title: "Please select one address to proceed.",
+            variant: "destructive",
+          });
+          return;
+        }
+      
+        // Check if Geolocation API is available
+        if (!navigator.geolocation) {
+          toast({
+            title: "Geolocation is not supported by your browser.",
+            variant: "destructive",
+          });
+          return;
+        }
+      
+        // Get the current location of the user
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+      
+            const salesmanId = localStorage.getItem('salesmanId') || null;
+      
+            const orderData = {
+              userId: user?.id,
+              salesmanId: salesmanId || null,
+              cartId: cartItems?._id,
+              cartItems: cartItems.items.map((singleCartItem) => ({
+                productId: singleCartItem?.productId,
+                title: singleCartItem?.title,
+                image: singleCartItem?.image,
+                price: singleCartItem?.salePrice > 0
+                  ? singleCartItem?.salePrice
+                  : singleCartItem?.price,
+                quantity: singleCartItem?.quantity,
+              })),
+              addressInfo: {
+                addressId: currentSelectedAddress?._id,
+                shopName: user?.userName,
+                address: currentSelectedAddress?.address,
+                phone: currentSelectedAddress?.phone,
+                notes: currentSelectedAddress?.notes,
+              },
+              orderStatus: "pending",
+              paymentMethod: "cash-on-delivery",
+              paymentStatus: "pending",
+              totalAmount: totalCartAmount,
+              orderDate: new Date(),
+              orderUpdateDate: new Date(),
+              // Add the current location to the order
+              location: {
+                latitude,
+                longitude,
+              },
+            };
+      
+            setIsLoading(true); // Start loading
+      
+            // Dispatch the order creation request
+            dispatch(createNewOrder(orderData)).then((data) => {
+              setIsLoading(false); // End loading
+              console.log(data);
+              if (data?.payload?.success) {
+                toast({
+                  title: "Order placed successfully! An email has been sent to the admin.",
+                  variant: "success",
+                });
+                // Clear the cart both from the database and state
+                dispatch(clearCartFromDB(user?.id)); // Call the thunk to clear the cart from DB
+                dispatch(clearCart()); // Clear the cart in Redux state
+                // Redirect to Order Success Page
+                navigate("/shop/orderSuccess");
+              } else {
+                toast({
+                  title: "Order placement failed. Please try again.",
+                  variant: "destructive",
+                });
+              }
+            });
+          },
+          (error) => {
+            toast({
+              title: "Unable to retrieve your location. Please enable location permissions.",
+              variant: "destructive",
+            });
+          }
+        );
       }
-    });
-  }
+      
 
   return (
     <div className="flex flex-col">

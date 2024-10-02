@@ -22,7 +22,6 @@ function AdminOrderDetailsView({ orderDetails }) {
   const dispatch = useDispatch();
   const { toast } = useToast();
 
-
   function handleUpdateStatus(event) {
     event.preventDefault();
     const { status } = formData;
@@ -40,6 +39,19 @@ function AdminOrderDetailsView({ orderDetails }) {
       }
     });
   }
+
+  // Function to open Google Maps in a new tab with latitude and longitude
+  const handleOpenMap = () => {
+    const { latitude, longitude } = orderDetails?.location || {};
+    if (latitude && longitude) {
+      const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
+      window.open(url, "_blank");
+    } else {
+      toast({
+        title: "Location information is missing",
+      });
+    }
+  };
 
   return (
     <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
@@ -60,13 +72,11 @@ function AdminOrderDetailsView({ orderDetails }) {
           <div className="flex mt-2 items-center justify-between">
             <p className="font-medium">Placed By</p>
             {orderDetails?.salesmanId !== null ? (
-              <p className="font-medium">Salesman</p> // Show this if salesmanId is not null
+              <p className="font-medium">Salesman</p>
             ) : (
-              <p className="font-medium">Shop</p> // Show this if salesmanId is null
+              <p className="font-medium">Shop</p>
             )}
           </div>
-
-
 
           <div className="flex mt-2 items-center justify-between">
             <p className="font-medium">Order Status</p>
@@ -84,7 +94,9 @@ function AdminOrderDetailsView({ orderDetails }) {
             </Label>
           </div>
         </div>
+
         <Separator />
+
         <div className="grid gap-4">
           <div className="grid gap-2">
             <div className="font-medium">Order Details</div>
@@ -101,15 +113,37 @@ function AdminOrderDetailsView({ orderDetails }) {
             </ul>
           </div>
         </div>
+
         <div className="grid gap-4">
           <div className="grid gap-2">
             <div className="font-medium">Shipping Info</div>
             <div className="grid gap-0.5 text-muted-foreground">
               <span>Shop Name: {orderDetails?.addressInfo?.shopName}</span>
-              <span> Shop Address:{orderDetails?.addressInfo?.address}</span>
-              <span>Shop Phone No:{orderDetails?.addressInfo?.phone}</span>
+              <span>Shop Address: {orderDetails?.addressInfo?.address}</span>
+              <span>Shop Phone No: {orderDetails?.addressInfo?.phone}</span>
               <h3>Note: {orderDetails?.addressInfo?.notes}</h3>
             </div>
+
+            {/* Display Latitude and Longitude if available */}
+            {orderDetails?.location?.latitude && orderDetails?.location?.longitude ? (
+              <div className="mt-4">
+                <p className="font-medium">Location</p>
+                <div>
+                  Latitude: {orderDetails?.location?.latitude} <br />
+                  Longitude: {orderDetails?.location?.longitude}
+                </div>
+
+                {/* Button to open Google Maps */}
+                <button
+                  className="mt-2 bg-blue-500 text-white py-2 px-4 rounded"
+                  onClick={handleOpenMap}
+                >
+                  Open in Google Maps
+                </button>
+              </div>
+            ) : (
+              <div className="text-red-500 mt-2">Location data not available</div>
+            )}
           </div>
         </div>
 
@@ -137,7 +171,6 @@ function AdminOrderDetailsView({ orderDetails }) {
         </div>
       </div>
     </DialogContent>
-
   );
 }
 
