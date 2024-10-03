@@ -15,8 +15,7 @@ const adminBrandRouter = require("./routes/admin/brands-route");
 const adminCategoryRouter = require("./routes/admin/categories-route");
 const shopSearchRouter = require("./routes/shop/search-routes");
 const shopReviewRouter = require("./routes/shop/review-routes");
-
-
+const path = require("path");
 const commonFeatureRouter = require("./routes/common/feature-routes");
 
 //create a database connection -> u can also
@@ -30,27 +29,11 @@ mongoose
 const app = express();
 const PORT = 5000;
 
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST", "DELETE", "PUT"],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "Cache-Control",
-      "Expires",
-      "Pragma",
-    ],
-    credentials: true,
-  })
-);
 
-app.get("/",(req,res) => {
-  res.send("Backend is live")
-})
 
 app.use(cookieParser());
 app.use(express.json());
+
 app.use("/api/auth", authRouter);
 app.use("/api/admin/products", adminProductsRouter);
 app.use("/api/admin/orders", adminOrderRouter);
@@ -67,5 +50,16 @@ app.use("/api/shop/search", shopSearchRouter);
 app.use("/api/shop/review", shopReviewRouter);
 
 app.use("/api/common/feature", commonFeatureRouter);
+
+app.use(express.static("public"))
+app.use("/*",(req,res)=>{
+  if (!req.originalUrl.startsWith("/api")) {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+  } else {
+    res.status(404).json({ error: "API route not found" });
+  }
+})
+
+
 
 app.listen(PORT, () => console.log(`Server is now running on port ${PORT}`));

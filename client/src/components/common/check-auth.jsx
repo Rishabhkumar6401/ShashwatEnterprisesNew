@@ -20,6 +20,7 @@ function CheckAuth({ isAuthenticated, user, children }) {
   // Redirect if user is authenticated but on login or register page
   if (isAuthenticated) {
     if (
+      location.pathname === "/" || // Base URL should also be redirected
       location.pathname.includes("/login") ||
       location.pathname.includes("/register")
     ) {
