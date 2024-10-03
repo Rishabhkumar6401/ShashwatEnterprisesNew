@@ -5,9 +5,9 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "cd ../client && npm run build && mkdir -p ../server/public && mv ./dist/* ../server/public && cd ../server && node server.js"
+    "start": "node server.js"
   },
-  "author": "sangam mukherjee",
+  "author": "Shashwat Enterprises",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
