@@ -21,7 +21,7 @@ export const fetchAllFilteredProducts = createAsyncThunk(
     });
 
     const result = await axios.get(
-      `http://chatorzzz.in:5000/api/shop/products/get?${query}`
+      `https://chatorzzz.in/api/shop/products/get?${query}`
     );
 
     return result?.data;
@@ -33,7 +33,7 @@ export const fetchLatestProducts = createAsyncThunk(
   "/products/fetchLatestProducts",
   async () => {
     const result = await axios.get(
-      `http://chatorzzz.in:5000/api/shop/products/get?limit=12&sortBy=createdAt:desc`
+      `https://chatorzzz.in/api/shop/products/get?limit=12&sortBy=createdAt:desc`
     );
 
     return result?.data;
@@ -45,7 +45,7 @@ export const fetchProductDetails = createAsyncThunk(
   "/products/fetchProductDetails",
   async (id) => {
     const result = await axios.get(
-      `http://chatorzzz.in:5000/api/shop/products/get/${id}`
+      `https://chatorzzz.in/api/shop/products/get/${id}`
     );
 
     return result?.data;
@@ -57,7 +57,7 @@ export const fetchBestProducts = createAsyncThunk(
   "/products/fetchBestProducts",
   async () => {
     const result = await axios.get(
-      `http://chatorzzz.in:5000/api/shop/products/bestProducts`
+      `https://chatorzzz.in/api/shop/products/bestProducts`
     );
 
     return result?.data;
