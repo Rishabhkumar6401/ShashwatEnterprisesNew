@@ -12,7 +12,7 @@ export const addNewProduct = createAsyncThunk(
   "/products/addnewproduct",
   async (formData) => {
     const result = await axios.post(
-      "http://chatorzzz.in:5000//api/admin/products/add",
+      "http://chatorzzz.in:5000/api/admin/products/add",
       formData,
       {
         headers: {
@@ -29,7 +29,7 @@ export const fetchAllProducts = createAsyncThunk(
   "/products/fetchAllProducts",
   async ({ page = 1, limit = 10 }) => { // Accept page and limit as parameters
     const result = await axios.get(
-      `http://chatorzzz.in:5000//api/admin/products/get?page=${page}&limit=${limit}`
+      `http://chatorzzz.in:5000/api/admin/products/get?page=${page}&limit=${limit}`
     );
 
     return result?.data;
@@ -40,7 +40,7 @@ export const fetchOutOfStockProducts = createAsyncThunk(
   "/products/fetchOutOfStockProducts",  // New API for out-of-stock products
   async () => {
     const result = await axios.get(
-      "http://chatorzzz.in:5000//api/admin/products/outOfStock"
+      "http://chatorzzz.in:5000/api/admin/products/outOfStock"
     );
 
     return result?.data;
@@ -51,7 +51,7 @@ export const editProduct = createAsyncThunk(
   "/products/editProduct",
   async ({ id, formData }) => {
     const result = await axios.put(
-      `http://chatorzzz.in:5000//api/admin/products/edit/${id}`,
+      `http://chatorzzz.in:5000/api/admin/products/edit/${id}`,
       formData,
       {
         headers: {
@@ -68,7 +68,7 @@ export const deleteProduct = createAsyncThunk(
   "/products/deleteProduct",
   async (id) => {
     const result = await axios.delete(
-      `http://chatorzzz.in:5000//api/admin/products/delete/${id}`
+      `http://chatorzzz.in:5000/api/admin/products/delete/${id}`
     );
 
     return result?.data;

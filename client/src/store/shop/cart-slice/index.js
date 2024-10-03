@@ -11,7 +11,7 @@ export const addToCart = createAsyncThunk(
   "cart/addToCart",
   async ({ userId, productId, quantity }) => {
     const response = await axios.post(
-      "http://chatorzzz.in:5000//api/shop/cart/add",
+      "http://chatorzzz.in:5000/api/shop/cart/add",
       {
         userId,
         productId,
@@ -27,7 +27,7 @@ export const fetchCartItems = createAsyncThunk(
   "cart/fetchCartItems",
   async (userId) => {
     const response = await axios.get(
-      `http://chatorzzz.in:5000//api/shop/cart/get/${userId}`
+      `http://chatorzzz.in:5000/api/shop/cart/get/${userId}`
     );
     return response.data;
   }
@@ -38,7 +38,7 @@ export const deleteCartItem = createAsyncThunk(
   "cart/deleteCartItem",
   async ({ userId, productId }) => {
     const response = await axios.delete(
-      `http://chatorzzz.in:5000//api/shop/cart/${userId}/${productId}`
+      `http://chatorzzz.in:5000/api/shop/cart/${userId}/${productId}`
     );
     return response.data;
   }
@@ -49,7 +49,7 @@ export const updateCartQuantity = createAsyncThunk(
   "cart/updateCartQuantity",
   async ({ userId, productId, quantity }) => {
     const response = await axios.put(
-      "http://chatorzzz.in:5000//api/shop/cart/update-cart",
+      "http://chatorzzz.in:5000/api/shop/cart/update-cart",
       {
         userId,
         productId,
@@ -64,7 +64,7 @@ export const updateCartQuantity = createAsyncThunk(
 export const clearCartFromDB = createAsyncThunk(
   "cart/clearCartFromDB",
   async (userId) => {
-    await axios.delete(`http://chatorzzz.in:5000//api/shop/cart/${userId}`);
+    await axios.delete(`http://chatorzzz.in:5000/api/shop/cart/${userId}`);
     return userId; // Return userId to use in the reducer
   }
 );
