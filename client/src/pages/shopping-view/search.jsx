@@ -50,10 +50,7 @@ function SearchProducts() {
       if (indexOfCurrentItem > -1) {
         const getQuantity = getCartItems[indexOfCurrentItem].quantity;
         if (getQuantity + 1 > getTotalStock) {
-          toast({
-            title: `Only ${getQuantity} quantity can be added for this item`,
-            variant: "destructive",
-          });
+          
 
           return;
         }
@@ -69,9 +66,7 @@ function SearchProducts() {
     ).then((data) => {
       if (data?.payload?.success) {
         dispatch(fetchCartItems(user?.id));
-        toast({
-          title: "Product is added to cart",
-        });
+        
       }
     });
   }
@@ -110,9 +105,7 @@ function SearchProducts() {
             deleteCartItem({ userId: user?.id, productId: productId })
         ).then((data) => {
             if (data?.payload?.success) {
-                toast({
-                    title: "Cart item deleted successfully",
-                });
+                
                 dispatch(fetchCartItems(user?.id));  // Fetch updated cart items
             } else {
                 toast({
@@ -133,9 +126,6 @@ function SearchProducts() {
         })
     ).then((data) => {
         if (data?.payload?.success) {
-            toast({
-                title: "Cart item updated successfully",
-            });
             dispatch(fetchCartItems(user?.id));  // Fetch updated cart items
         } else {
             toast({

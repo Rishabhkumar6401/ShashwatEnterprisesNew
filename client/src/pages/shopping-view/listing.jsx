@@ -117,9 +117,7 @@ function ShoppingListing() {
     dispatch(fetchCartItems(user?.id));
 
     // Notify the user
-    toast({
-        title: "Product is added to cart",
-    });
+   
 }
 
 
@@ -158,9 +156,7 @@ function ShoppingListing() {
     if (newQuantity < 1) {
       dispatch(deleteCartItem({ userId: user?.id, productId })).then((data) => {
         if (data?.payload?.success) {
-          toast({
-            title: "Cart item deleted successfully",
-          });
+          
           dispatch(fetchCartItems(user?.id));
         } else {
           toast({
@@ -180,9 +176,6 @@ function ShoppingListing() {
       })
     ).then((data) => {
       if (data?.payload?.success) {
-        toast({
-          title: "Cart item updated successfully",
-        });
         dispatch(fetchCartItems(user?.id));
       } else {
         toast({
