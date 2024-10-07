@@ -4,13 +4,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { deleteCartItem, updateCartQuantity } from "@/store/shop/cart-slice";
 
 
-
 function UserCartItemsContent({ cartItem }) {
   const { user } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
   const { productList } = useSelector((state) => state.shopProducts);
   const dispatch = useDispatch();
-  
+ 
 
   function handleUpdateQuantity(getCartItem, typeOfAction) {
    
@@ -26,6 +25,7 @@ function UserCartItemsContent({ cartItem }) {
       })
     ).then((data) => {
       if (data?.payload?.success) {
+        
       }
     });
   }

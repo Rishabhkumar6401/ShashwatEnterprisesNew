@@ -2,6 +2,8 @@ import ProductFilter from "@/components/shopping-view/filter";
 import ProductDetailsDialog from "@/components/shopping-view/product-details";
 import ShoppingProductTile from "@/components/shopping-view/product-tile";
 import { deleteCartItem, updateCartQuantity } from "@/store/shop/cart-slice";
+import { Label } from "../../components/ui/label";
+import { Checkbox } from "../../components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -28,19 +30,24 @@ function createSearchParamsHelper(filterParams) {
 
   for (const [key, value] of Object.entries(filterParams)) {
     if (Array.isArray(value) && value.length > 0) {
-      const paramValue = value.join(",");
+      const paramValue = value.join(","); // Handle multiple values for filters like brand, category, etc.
       queryParams.push(`${key}=${encodeURIComponent(paramValue)}`);
+    } else if (value) {
+      queryParams.push(`${key}=${encodeURIComponent(value)}`); // Handle single filter options
     }
   }
 
-  return queryParams.join("&");
+  return queryParams.join("&"); // Join all query params into a string
 }
 
+
 function ShoppingListing() {
+  let lastFetchedPage = 0;
   const dispatch = useDispatch();
   const { productList, productDetails, currentPage, hasMore, isLoading } = useSelector(
     (state) => state.shopProducts
   );
+  console.log(currentPage)
   const { cartItems } = useSelector((state) => state.shopCart);
   const { user } = useSelector((state) => state.auth);
   const [filters, setFilters] = useState({});
@@ -48,36 +55,49 @@ function ShoppingListing() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+   // State to manage selected brands and their subcategories
+   const [selectedBrands, setSelectedBrands] = useState([]);
+   const [subcategories, setSubcategories] = useState([]);
+  
   const { toast } = useToast();
 
   const categorySearchParam = searchParams.get("category");
+  const brandSearchParam = searchParams.get("brand");
+  
 
   // function handleSort(value) {
   //   setSort(value);
   // }
   const clearFilters = () => {
     setFilters({}); // Reset filters to their initial state
+    setSearchParams(new URLSearchParams())
+    dispatch(setCurrentPage(1));
   };
 
   function handleFilter(getSectionId, getCurrentOption) {
-    setShowFilters(false)
-    let cpyFilters = { ...filters };
-    const indexOfCurrentSection = Object.keys(cpyFilters).indexOf(getSectionId);
-
-    if (indexOfCurrentSection === -1) {
-      cpyFilters[getSectionId] = [getCurrentOption];
+    const updatedFilters = { ...filters };
+    if (!updatedFilters[getSectionId]) {
+      updatedFilters[getSectionId] = [getCurrentOption];
     } else {
-      const indexOfCurrentOption = cpyFilters[getSectionId].indexOf(getCurrentOption);
-      if (indexOfCurrentOption === -1) {
-        cpyFilters[getSectionId].push(getCurrentOption);
+      const index = updatedFilters[getSectionId].indexOf(getCurrentOption);
+      if (index === -1) {
+        updatedFilters[getSectionId].push(getCurrentOption);
       } else {
-        cpyFilters[getSectionId].splice(indexOfCurrentOption, 1);
+        updatedFilters[getSectionId].splice(index, 1);
       }
     }
-
-    setFilters(cpyFilters);
-    sessionStorage.setItem("filters", JSON.stringify(cpyFilters));
+    setFilters(updatedFilters);
+    sessionStorage.setItem("filters", JSON.stringify(updatedFilters));
+    dispatch(setCurrentPage(1)); // Reset current page when filters change
   }
+
+useEffect(() => {
+    // Reset products when the filters or sorting change
+    dispatch(resetProducts());
+    dispatch(resetPaginations());
+    fetchProducts(); // Call to fetch products with updated filters and reset page
+}, [filters, sort]);
+
 
   function handleGetProductDetails(getCurrentProductId) {
     dispatch(fetchProductDetails(getCurrentProductId));
@@ -117,7 +137,7 @@ function ShoppingListing() {
     dispatch(fetchCartItems(user?.id));
 
     // Notify the user
-   
+    
 }
 
 
@@ -176,6 +196,7 @@ function ShoppingListing() {
       })
     ).then((data) => {
       if (data?.payload?.success) {
+        
         dispatch(fetchCartItems(user?.id));
       } else {
         toast({
@@ -189,33 +210,55 @@ function ShoppingListing() {
    // Function to fetch products, only if not loading and has more products
    const fetchProducts = () => {
     if (!isLoading && hasMore) {
-      dispatch(
-        fetchAllFilteredProducts({
-          filterParams: filters,
-          sortParams: sort,
-          page: currentPage,
-        })
-      );
+      const pageToFetch = currentPage;
+  
+      if (pageToFetch !== lastFetchedPage) {
+        const queryString = createSearchParamsHelper(filters); // Create query string based on filters
+        
+        dispatch(
+          fetchAllFilteredProducts({
+            filterParams: filters, // Pass filters directly to the API call
+            sortParams: sort,
+            page: pageToFetch,
+            queryString, // Add the query string here
+          })
+        );
+        lastFetchedPage = pageToFetch;
+      }
     }
   };
+  
+
   useEffect(() => {
     // setSort("price-lowtohigh");
+    dispatch(setCurrentPage(1));
     setFilters(JSON.parse(sessionStorage.getItem("filters")) || {});
   }, [categorySearchParam]);
-  // Fetch products when filters or sorting changes
   useEffect(() => {
-    dispatch(resetProducts()); // Reset products when the filters or sorting change
-    // dispatch(resetPaginations())
-     dispatch(resetPaginations());
-    fetchProducts();
-  }, [filters, sort]);
+    // setSort("price-lowtohigh");
+    dispatch(setCurrentPage(1));
+    setFilters(JSON.parse(sessionStorage.getItem("filters")) || {});
+  }, [brandSearchParam]);
+  // Fetch products when filters or sorting changes
+
+
+  
 
  
 
   // Handle sort change
   const handleSort = (newSort) => {
-    setSort(newSort); // Update sort state, which will trigger useEffect to fetch products
+    setSort(newSort);
+    dispatch(setCurrentPage(1)); // Reset page when sort changes
   };
+
+  useEffect(() => {
+    const savedFilters = JSON.parse(sessionStorage.getItem("filters"));
+    if (savedFilters) setFilters(savedFilters);
+  }, []);
+  useEffect(() => {
+    fetchProducts(currentPage); // Fetch products when current page, filters, or sort changes
+  }, [currentPage, filters, sort]);
 
     useEffect(() => {
 
@@ -228,16 +271,37 @@ function ShoppingListing() {
     }
   }, [filters]);
 
+  useEffect(() => {
+    // Check if query params have brand or category
+    const brand = searchParams.get("brand");
+    const category = searchParams.get("category");
+  
+    if (brand || category) {
+      // Set filters based on query params
+      const updatedFilters = { ...filters };
+      if (brand) {
+        updatedFilters.brand = [brand]; // Assuming 'brand' is an array of brands
+      }
+      if (category) {
+        updatedFilters.category = [category]; // Assuming 'category' is an array of categories
+      }
+  
+      setFilters(updatedFilters);
+      dispatch(setCurrentPage(1)); // Reset current page to 1 if brand or category is present
+    }
+  }, [searchParams, dispatch]);
+  
+  
+
   // Handle infinite scroll for fetching more products
   const handleScroll = () => {
     if (
       window.innerHeight + document.documentElement.scrollTop + 100 >=
-        document.documentElement.scrollHeight &&
+      document.documentElement.scrollHeight &&
       hasMore &&
       !isLoading
     ) {
-      dispatch(setCurrentPage(currentPage + 1))
-      fetchProducts(); // Fetch more products if at the bottom of the page and if there are more
+      dispatch(setCurrentPage(currentPage + 1));
     }
   };
 
@@ -265,7 +329,7 @@ function ShoppingListing() {
 
     {/* Filter component, shown only on mobile and tablet */}
     <div className={`transition-all duration-300 ease-in-out ${showFilters ? "block" : "hidden"} md:block`}>
-      <ProductFilter filters={filters} handleFilter={handleFilter} />
+      <ProductFilter filters={filters} handleFilter={handleFilter}  />
       {/* Clear Filters button, shown after filters */}
       <button 
         className="mt-2 p-2 bg-red-500 text-white rounded-md"
@@ -324,8 +388,10 @@ function ShoppingListing() {
         setOpen={setOpenDetailsDialog}
         productDetails={productDetails}
       />
+
+      
     </div>
   );
 }
 
-export default ShoppingListing;
+export default ShoppingListing;  

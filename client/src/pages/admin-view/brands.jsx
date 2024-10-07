@@ -16,6 +16,7 @@ function AdminBrands() {
   const [imageFile, setImageFile] = useState(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState('');
   const [imageLoadingState, setImageLoadingState] = useState(false);
+  const [subcategories, setSubcategories] = useState(['']); // Track subcategories
 
   useEffect(() => {
     dispatch(getAllBrands());
@@ -31,6 +32,7 @@ function AdminBrands() {
     setCurrentEditedId(brand._id);
     setNewBrandName(brand.brandName);
     setUploadedImageUrl(brand.imageUrl); // Assume brand has an imageUrl property
+    setSubcategories(brand.subcategories || ['']); // Set existing subcategories or empty
     setSheetOpen(true);
   };
 
@@ -39,13 +41,30 @@ function AdminBrands() {
     setNewBrandName('');
     setImageFile(null);
     setUploadedImageUrl('');
+    setSubcategories(['']); // Reset subcategories
     setSheetOpen(true);
+  };
+
+  const handleSubcategoryChange = (index, value) => {
+    const updatedSubcategories = [...subcategories];
+    updatedSubcategories[index] = value;
+    setSubcategories(updatedSubcategories);
+  };
+
+  const handleAddSubcategoryField = () => {
+    setSubcategories([...subcategories, '']);
+  };
+
+  const handleRemoveSubcategoryField = (index) => {
+    const updatedSubcategories = subcategories.filter((_, i) => i !== index);
+    setSubcategories(updatedSubcategories);
   };
 
   const handleSubmit = () => {
     const brandData = {
       brandName: newBrandName,
-      imageUrl: uploadedImageUrl, // Assuming you handle image upload separately
+      imageUrl: uploadedImageUrl,
+      subcategories, // Pass the subcategories array
     };
 
     if (currentEditedId) {
@@ -119,6 +138,7 @@ function AdminBrands() {
             imageLoadingState={imageLoadingState}
             isEditMode={currentEditedId !== null}
           />
+
           <div className="mt-4">
             <input
               type="text"
@@ -127,6 +147,33 @@ function AdminBrands() {
               onChange={(e) => setNewBrandName(e.target.value)} 
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
             />
+
+            {subcategories.map((subcategory, index) => (
+              <div key={index} className="flex space-x-2 mt-2">
+                <input
+                  type="text"
+                  placeholder="Enter subcategory"
+                  value={subcategory}
+                  onChange={(e) => handleSubcategoryChange(index, e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+                <button
+                  onClick={() => handleRemoveSubcategoryField(index)}
+                  className="bg-red-500 text-white px-3 py-2 rounded-md"
+                >
+                  -
+                </button>
+              </div>
+            ))}
+
+            <button
+              onClick={handleAddSubcategoryField}
+              className="mt-2 bg-green-500 text-white px-4 py-2 rounded-md"
+            >
+              + Add Subcategory
+            </button>
+            <br/>
+
             <Button
               onClick={handleSubmit} 
               className="mt-4 bg-blue-500 text-white"

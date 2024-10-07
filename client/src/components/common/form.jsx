@@ -17,8 +17,7 @@ function CommonForm({
   onSubmit,
   buttonText,
   isBtnDisabled,
-  phoneNo,
-  password,
+  handleBrandChange, // Added handleBrandChange prop
 }) {
   function renderInputsByComponentType(getControlItem) {
     let element = null;
@@ -41,17 +40,22 @@ function CommonForm({
             }
           />
         );
-
         break;
+
       case "select":
         element = (
           <Select
-            onValueChange={(value) =>
+            onValueChange={(value) => {
+              // Check if the control item is brand and call the handleBrandChange function
+              if (getControlItem.name === "brand") {
+                handleBrandChange(value); // Call the handleBrandChange function
+              }
+              // Update formData for the selected value
               setFormData({
                 ...formData,
                 [getControlItem.name]: value,
-              })
-            }
+              });
+            }}
             value={value}
           >
             <SelectTrigger className="w-full">
@@ -68,8 +72,8 @@ function CommonForm({
             </SelectContent>
           </Select>
         );
-
         break;
+
       case "textarea":
         element = (
           <Textarea
@@ -85,7 +89,6 @@ function CommonForm({
             }
           />
         );
-
         break;
 
       default:
@@ -112,21 +115,19 @@ function CommonForm({
 
   return (
     <>
-    <h1>{phoneNo}</h1>
-    <h1>{password}</h1>
-    <form onSubmit={onSubmit}>
-      <div className="flex flex-col gap-3">
-        {formControls.map((controlItem) => (
-          <div className="grid w-full gap-1.5" key={controlItem.name}>
-            <Label className="mb-1">{controlItem.label}</Label>
-            {renderInputsByComponentType(controlItem)}
-          </div>
-        ))}
-      </div>
-      <Button disabled={isBtnDisabled} type="submit" className="mt-2 w-full">
-        {buttonText || "Submit"}
-      </Button>
-    </form>
+      <form onSubmit={onSubmit}>
+        <div className="flex flex-col gap-3">
+          {formControls.map((controlItem) => (
+            <div className="grid w-full gap-1.5" key={controlItem.name}>
+              <Label className="mb-1">{controlItem.label}</Label>
+              {renderInputsByComponentType(controlItem)}
+            </div>
+          ))}
+        </div>
+        <Button disabled={isBtnDisabled} type="submit" className="mt-2 w-full">
+          {buttonText || "Submit"}
+        </Button>
+      </form>
     </>
   );
 }

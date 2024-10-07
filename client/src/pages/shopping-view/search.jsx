@@ -5,6 +5,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
 import { fetchProductDetails } from "@/store/shop/products-slice";
 import { deleteCartItem, updateCartQuantity } from "@/store/shop/cart-slice";
+
 import {
   getSearchResults,
   resetSearchResults,
@@ -19,7 +20,9 @@ function SearchProducts() {
   const [searchParams, setSearchParams] = useSearchParams();
   const dispatch = useDispatch();
   const { searchResults } = useSelector((state) => state.shopSearch);
-  const { productList, productDetails } = useSelector((state) => state.shopProducts);
+  const { productList, productDetails, currentPage, hasMore, isLoading } = useSelector(
+    (state) => state.shopProducts
+  );
    
   
 
@@ -39,102 +42,100 @@ function SearchProducts() {
     }
   }, [keyword]);
 
-  function handleAddtoCart(getCurrentProductId, getTotalStock, newQuantity) {
-    
+  function handleAddtoCart(getCurrentProductId) {
+    // Get current cart items
     let getCartItems = cartItems.items || [];
 
-    if (getCartItems.length) {
-      const indexOfCurrentItem = getCartItems.findIndex(
+    // Check if the item is already in the cart
+    const indexOfCurrentItem = getCartItems.findIndex(
         (item) => item.productId === getCurrentProductId
-      );
-      if (indexOfCurrentItem > -1) {
-        const getQuantity = getCartItems[indexOfCurrentItem].quantity;
-        if (getQuantity + 1 > getTotalStock) {
-          
+    );
 
-          return;
-        }
-      }
+    // If the item is already in the cart, increment the quantity
+    if (indexOfCurrentItem > -1) {
+        // Increment the quantity of the existing item
+        dispatch(
+            updateCartItemQuantity({
+                userId: user?.id,
+                productId: getCurrentProductId,
+                quantity: getCartItems[indexOfCurrentItem].quantity + 1,
+            })
+        );
+    } else {
+        // If the item is not in the cart, add it
+        dispatch(
+            addToCart({
+                userId: user?.id,
+                productId: getCurrentProductId,
+                quantity: 1,
+            })
+        );
     }
 
-    dispatch(
-      addToCart({
-        userId: user?.id,
-        productId: getCurrentProductId,
-        quantity: 1,
-      })
-    ).then((data) => {
-      if (data?.payload?.success) {
-        dispatch(fetchCartItems(user?.id));
-        
-      }
+    // Dispatch the fetchCartItems action after adding/updating
+    dispatch(fetchCartItems(user?.id));
+
+    // Notify the user
+    
+}
+
+function handleUpdateQuantity(productId, value) {
+  let getCartItems = cartItems.items || [];
+  const cartItem = getCartItems.find((item) => item.productId === productId);
+
+  if (!cartItem) {
+    toast({
+      title: "Product not found in the cart",
+      variant: "destructive",
     });
+    return;
   }
 
-  function handleUpdateQuantity(productId, value) {
-    let getCartItems = cartItems.items || [];
-    
-    // Find the product in the cart
-    const cartItem = getCartItems.find((item) => item.productId === productId);
-  
-    if (!cartItem) {
-        toast({
-            title: "Product not found in the cart",
-            variant: "destructive",
-        });
-        return;
-    }
-  
-    // Find the product details from the product list
-    const product = productList.find((item) => item._id === productId);
-    if (!product) {
-        toast({
-            title: "Product details not found",
-            variant: "destructive",
-        });
-        return;
-    }
-  
-    const currentQuantity = cartItem.quantity;
-    let newQuantity = value;
-
-    // Ensure new quantity does not go below 1
-    if (newQuantity < 1) {
-        // Delete the item from the cart if quantity is less than 1
-        dispatch(
-            deleteCartItem({ userId: user?.id, productId: productId })
-        ).then((data) => {
-            if (data?.payload?.success) {
-                
-                dispatch(fetchCartItems(user?.id));  // Fetch updated cart items
-            } else {
-                toast({
-                    title: "Failed to delete cart item",
-                    variant: "destructive",
-                });
-            }
-        });
-        return;
-    }
-  
-    // Dispatch the updated quantity to the cart
-    dispatch(
-        updateCartQuantity({
-            userId: user?.id,
-            productId: productId,
-            quantity: newQuantity,
-        })
-    ).then((data) => {
-        if (data?.payload?.success) {
-            dispatch(fetchCartItems(user?.id));  // Fetch updated cart items
-        } else {
-            toast({
-                title: "Failed to update cart item",
-                variant: "destructive",
-            });
-        }
+  // Now we will check `searchResults` instead of `productList`
+  const product = searchResults.find((item) => item._id === productId);
+  if (!product) {
+    toast({
+      title: "Product details not found",
+      variant: "destructive",
     });
+    return;
+  }
+
+  // const getTotalStock = product.totalStock; // Uncomment if totalStock logic needed
+  let newQuantity = value;
+
+  if (newQuantity < 1) {
+    dispatch(deleteCartItem({ userId: user?.id, productId })).then((data) => {
+      if (data?.payload?.success) {
+        dispatch(fetchCartItems(user?.id));
+      } else {
+        toast({
+          title: "Failed to delete cart item",
+          variant: "destructive",
+        });
+      }
+    });
+    return;
+  }
+
+  dispatch(
+    updateCartQuantity({
+      userId: user?.id,
+      productId,
+      quantity: newQuantity,
+    })
+  ).then((data) => {
+    if (data?.payload?.success) {
+      dispatch(fetchCartItems(user?.id));
+    } else {
+      toast({
+        title: "Failed to update cart item",
+        variant: "destructive",
+      });
+    }
+  });
 }
+
 
 
   function handleGetProductDetails(getCurrentProductId) {

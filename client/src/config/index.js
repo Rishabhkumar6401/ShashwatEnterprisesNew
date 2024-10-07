@@ -81,26 +81,19 @@ export const addProductFormElements = [
     label: "Category",
     name: "category",
     componentType: "select",
-    options: [
-      // { id: "Drinks", label: "Drinks" },
-      // { id: "Candy", label: "Candy" },
-      // { id: "Chips", label: "Chips" },
-      // { id: "Choclates", label: "Choclates" },
-      // { id: "Namkeen", label: "Namkeen" },
-    ],
+    options: [],
   },
   {
     label: "Brand",
     name: "brand",
     componentType: "select",
-    options: [
-      // { id: "Shadani", label: "Shadani" },
-      // { id: "SunBeam", label: "SunBeam" },
-      // { id: "Zubi", label: "Zubi" },
-      // { id: "Skippi", label: "Skippi" },
-      // { id: "Vpure", label: "Vpure" },
-      // { id: "Chocozay", label: "Chozozay" },
-    ],
+    options: [],
+  },
+  {
+    name: "subcategory",
+    label: "Subcategory",
+    componentType: "select",
+    options: [], // Will be populated based on selected brand
   },
   {
     label: "Price",

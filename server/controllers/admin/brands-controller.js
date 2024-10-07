@@ -2,7 +2,7 @@ const Brands = require("../../models/Brands");
 
 // Add a new brand
 const addBrand = async (req, res) => {
-  const { imageUrl, brandName } = req.body; // Extract brandName from the body
+  const { imageUrl, brandName,subcategories } = req.body; // Extract brandName from the body
   try {
     const checkbrand = await Brands.findOne({ brandName });
     if (checkbrand) {
@@ -15,6 +15,7 @@ const addBrand = async (req, res) => {
     const newbrand = new Brands({
       imageUrl,
       brandName, // Use the string value here
+      subcategories,
     });
 
     await newbrand.save();
@@ -53,11 +54,11 @@ const getBrands = async (req, res) => {
 // Edit/Update a brand by ID
 const editBrand = async (req, res) => {
   const { brandId } = req.params; // Extract brandId from URL params
-  const { imageUrl, brandName } = req.body; // Get updated details from the request body
+  const { imageUrl, brandName,subcategories } = req.body; // Get updated details from the request body
   try {
     const updatedBrand = await Brands.findByIdAndUpdate(
       brandId,
-      { imageUrl, brandName },
+      { imageUrl, brandName, subcategories },
       { new: true, runValidators: true } // Return the updated document
     );
 

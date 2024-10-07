@@ -17,7 +17,9 @@ function ShoppingProductTile({
   const cartItem = cartItems?.items?.find(
     (item) => item.productId === product._id
   );
+  // console.log(cartItem)
   const productQuantity = cartItem ? cartItem.quantity : 0; // Get product quantity or default to 0
+  // console.log(productQuantity)
 
   const [inputValue, setInputValue] = useState(productQuantity); // Initialize quantity state
 

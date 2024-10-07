@@ -49,6 +49,7 @@ function AdminProducts() {
   const { productList } = useSelector((state) => state.adminProducts);
   const { categoriesList } = useSelector((state) => state.category);
   const { brandsList } = useSelector((state) => state.brands);
+  const [selectedBrand, setSelectedBrand] = useState("");
   const dispatch = useDispatch();
   const { toast } = useToast();
 
@@ -118,7 +119,7 @@ function AdminProducts() {
     dispatch(deleteProduct(getCurrentProductId)).then((data) => {
       if (data?.payload?.success) {
         dispatch(fetchAllProducts());
-        window.location.reload();
+        window.location.reload()
       }
     });
   }
@@ -175,6 +176,11 @@ function AdminProducts() {
     dispatch(getAllCategories());
   }, [dispatch]);
 
+  const handleBrandChange = (value) => {
+    setSelectedBrand(value);
+    setFormData((prevData) => ({ ...prevData, brand: value, subcategory: "" })); // Reset subcategory when brand changes
+  };
+
   // Update the registerFormControls to include the beats
   const UpdatedaddProductFormElements = addProductFormElements.map((control) => {
     if (control.name === "brand") {
@@ -186,6 +192,20 @@ function AdminProducts() {
         })),
       };
     }
+    else if (control.name === "subcategory") {
+      return {
+        ...control,
+        options: [
+          { id: "all", label: "All" }, // Adding the default "All" option
+          ...brandsList
+            .filter((brand) => brand.brandName === formData.brand) // Only show subcategories for the selected brand
+            .flatMap((brand) => brand.subcategories.map((sub) => ({
+              id: sub,
+              label: sub,
+            }))),
+        ],
+      };
+    } 
     else if (control.name === "category") {
       return {
         ...control,
@@ -253,6 +273,7 @@ function AdminProducts() {
               buttonText={currentEditedId !== null ? "Edit" : "Add"}
               formControls={UpdatedaddProductFormElements}
               isBtnDisabled={!isFormValid()}
+              handleBrandChange={handleBrandChange}
             />
           </div>
         </SheetContent>
