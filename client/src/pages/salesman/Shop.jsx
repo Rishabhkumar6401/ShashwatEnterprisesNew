@@ -10,6 +10,7 @@ const Shop = () => {
     const { users: userResponse, isLoading, error } = useSelector((state) => state.salesman);
     const beatsList = useSelector((state) => state.beats.beatsList); // Assuming you have beats in Redux store
     
+    
     const [filter, setFilter] = useState('');
     const [selectedBeats, setSelectedBeats] = useState([]);
     const navigate = useNavigate();
@@ -22,9 +23,9 @@ const Shop = () => {
     }, [dispatch]);
 
     function handleLogout() {
-        dispatch(logoutUser());
         localStorage.removeItem('salesmanId');
-        window.location.href = "/";
+        dispatch(logoutUser());
+
     }
 
     const handleImpersonate = async (userId) => {

@@ -13,6 +13,7 @@ import shopSearchSlice from "./shop/search-slice";
 import shopReviewSlice from "./shop/review-slice";
 import commonFeatureSlice from "./common-slice";
 import salesman from "./salesman"
+import shopsSlice from "./admin/shops-slice"
 
 const store = configureStore({
   reducer: {
@@ -20,6 +21,7 @@ const store = configureStore({
 
     adminProducts: adminProductsSlice,
     adminOrder: adminOrderSlice,
+    shops:shopsSlice,
     beats:beatsSlice,
     brands:brandsSlice,
     category:CategorySlice,

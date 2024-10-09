@@ -51,6 +51,11 @@ function ShoppingProductTile({
     }
   };
 
+  const handleClick = (e) => {
+    const length = e.target.value.length;
+    e.target.setSelectionRange(length, length); // Set cursor to the rightmost position
+  };
+
   const handleBlur = () => {
     if (inputValue > 0) {
       handleUpdateQuantity(product._id, inputValue);
@@ -103,11 +108,13 @@ function ShoppingProductTile({
               <Minus className="w-4 h-4" />
             </Button>
             <input
-              type="text"
+              type="text" // Use text type instead of number to avoid arrows
+              inputMode="numeric" // For numeric keyboard on mobile devices
               value={inputValue}
               onChange={handleInputChange} // Handle input change
               onBlur={handleBlur} // Handle when input loses focus
-              className="w-1/3 text-center border"
+              className="w-1/3 text-center border "
+              onClick={handleClick}
             />
             <Button
               variant="outline"

@@ -30,21 +30,6 @@ function ProductFilter({ filters, handleFilter }) {
     dispatch(getAllCategories()); // Fetch categories when component mounts
   }, [dispatch]);
 
-  useEffect(() => {
-    if (filters?.brand) {
-      const initialSelectedBrands = brandsList.filter((brand) =>
-        filters.brand.includes(brand.brandName)
-      );
-      setSelectedBrands(initialSelectedBrands);
-
-      // Extract subcategories from the selected brands
-      const initialSubcategories = initialSelectedBrands.flatMap(
-        (brand) => brand.subcategories || []
-      );
-      setSubcategories(initialSubcategories);
-    }
-  }, [filters, brandsList]);
-
   // Prepare filter options by combining dynamic brands and categories
   const filterOptions = {
     brand: brandsList.map((brand) => ({
@@ -76,8 +61,6 @@ function ProductFilter({ filters, handleFilter }) {
       setSubcategories((prevSubcategories) =>
         prevSubcategories.filter((subcat) => !brand.subcategories.includes(subcat))
       );
-
-      handleFilter("subcategory", "");
     } else {
       updatedBrands.push(brand);
       // Add subcategories of the newly selected brand
@@ -90,6 +73,7 @@ function ProductFilter({ filters, handleFilter }) {
     setSelectedBrands(updatedBrands);
     handleFilter("brand", brand.id); // Update filter for the brand
   };
+  
 
   // Handle category selection separately
   const handleCategoryChange = (category) => {
@@ -117,8 +101,7 @@ function ProductFilter({ filters, handleFilter }) {
                   className={`transition-transform duration-300 ${
                     expandedSections[keyItem] ? "rotate-90" : ""
                   }`}
-                />{" "}
-                {/* Rotate icon when expanded */}
+                /> {/* Rotate icon when expanded */}
                 {keyItem.charAt(0).toUpperCase() + keyItem.slice(1)}
               </h3>
               {expandedSections[keyItem] && ( // Conditionally show filter options
@@ -130,11 +113,10 @@ function ProductFilter({ filters, handleFilter }) {
                     >
                       <Checkbox
                         checked={
-                          filters &&
-                          Object.keys(filters).length > 0 &&
-                          filters[keyItem] &&
-                          filters[keyItem].indexOf(option.id) > -1
-                        }
+                          keyItem === "brand"
+                            ? selectedBrands.some((item) => item.id === option.id)
+                            : filters?.category?.includes(option.id) || false
+                        } // Properly check if the brand or category is selected
                         onCheckedChange={() =>
                           keyItem === "brand"
                             ? handleBrandChange(option) // Handle brand select/deselect
@@ -163,8 +145,7 @@ function ProductFilter({ filters, handleFilter }) {
               className={`transition-transform duration-300 ${
                 expandedSections.subcategory ? "rotate-90" : ""
               }`}
-            />{" "}
-            {/* Rotate icon when expanded */}
+            /> {/* Rotate icon when expanded */}
             Subcategories
           </h3>
           {expandedSections.subcategory && ( // Conditionally show subcategories

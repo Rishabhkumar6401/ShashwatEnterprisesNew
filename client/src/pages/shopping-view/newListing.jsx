@@ -47,7 +47,7 @@ function ShoppingListing() {
   const { productList, productDetails, currentPage, hasMore, isLoading } = useSelector(
     (state) => state.shopProducts
   );
-  
+  console.log(currentPage)
   const { cartItems } = useSelector((state) => state.shopCart);
   const { user } = useSelector((state) => state.auth);
   const [filters, setFilters] = useState({});
@@ -70,7 +70,7 @@ function ShoppingListing() {
   // }
   const clearFilters = () => {
     setFilters({}); // Reset filters to their initial state
-    setSearchParams(new URLSearchParams())
+    setSearchParams()
     dispatch(setCurrentPage(1));
   };
 
@@ -266,7 +266,6 @@ useEffect(() => {
       const createQueryString = createSearchParamsHelper(filters);
       dispatch(resetProducts())
       dispatch(resetPaginations());
-      dispatch(setCurrentPage(1))
       setSearchParams(new URLSearchParams(createQueryString));
 
     }
@@ -330,7 +329,6 @@ useEffect(() => {
 
     {/* Filter component, shown only on mobile and tablet */}
     <div className={`transition-all duration-300 ease-in-out ${showFilters ? "block" : "hidden"} md:block`}>
-    
       <ProductFilter filters={filters} handleFilter={handleFilter}  />
       {/* Clear Filters button, shown after filters */}
       <button 
@@ -384,7 +382,7 @@ useEffect(() => {
           )}
         </div>
       </div>
-    
+      {console.log(productDetails)}
       <ProductDetailsDialog
         open={openDetailsDialog}
         setOpen={setOpenDetailsDialog}

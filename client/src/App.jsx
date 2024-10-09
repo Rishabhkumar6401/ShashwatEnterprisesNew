@@ -32,6 +32,7 @@ import CreateShop from "./pages/salesman/CreateShop";
 import SalesmenPage from "./pages/admin-view/salesmen";
 import Beats from "./pages/admin-view/beats";
 import ForgotPassword from "./pages/auth/forget";
+import Shops from "./pages/admin-view/shops";
 
 function App() {
   const { user, isAuthenticated, isLoading } = useSelector(
@@ -84,6 +85,7 @@ function App() {
           <Route path="salesmen" element={<SalesmenPage />} />
           <Route path="beats" element={<Beats />} />
           <Route path="brands" element={<AdminBrands />} />
+          <Route path="shops" element={<Shops />} />
           <Route path="categories" element={<AdminCategory />} />
           <Route path="coming-soon" element={<AdminComingSoon />} />
           <Route path="features" element={<AdminFeatures />} />

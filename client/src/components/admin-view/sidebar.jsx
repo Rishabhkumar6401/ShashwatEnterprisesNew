@@ -4,7 +4,8 @@ import {
   LayoutDashboard,
   ShoppingBasket,
   UserRoundPen,
-  MapPinned
+  MapPinned,
+  Store
 } from "lucide-react";
 import { Fragment } from "react";
 import { useNavigate } from "react-router-dom";
@@ -58,6 +59,12 @@ const adminSidebarMenuItems = [
     label: "Out of Stock Products",
     path: "/admin/coming-soon",
     icon: <BadgeCheck />,
+  },
+  {
+    id: "shops",
+    label: "Shops",
+    path: "/admin/shops",
+    icon: <Store />,
   },
  
 
