@@ -25,7 +25,6 @@ function AddressCard({
       <CardContent className="grid p-4 gap-4">
         <Label>Address: {addressInfo?.address}</Label>
         <Label>Phone: {addressInfo?.phone}</Label>
-        <Label>Notes: {addressInfo?.notes}</Label>
       </CardContent>
       <CardFooter className="p-3 flex justify-between">
         <Button onClick={() => handleEditAddress(addressInfo)}>Edit</Button>

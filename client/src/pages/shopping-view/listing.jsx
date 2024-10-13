@@ -91,12 +91,12 @@ function ShoppingListing() {
     dispatch(setCurrentPage(1)); // Reset current page when filters change
   }
 
-useEffect(() => {
-    // Reset products when the filters or sorting change
-    dispatch(resetProducts());
-    dispatch(resetPaginations());
-    fetchProducts(); // Call to fetch products with updated filters and reset page
-}, [filters, sort]);
+// useEffect(() => {
+//     // Reset products when the filters or sorting change
+//     dispatch(resetProducts());
+//     dispatch(resetPaginations());
+//     fetchProducts(); // Call to fetch products with updated filters and reset page
+// }, [filters, sort]);
 
 
   function handleGetProductDetails(getCurrentProductId) {
@@ -257,7 +257,7 @@ useEffect(() => {
     if (savedFilters) setFilters(savedFilters);
   }, []);
   useEffect(() => {
-    fetchProducts(currentPage); // Fetch products when current page, filters, or sort changes
+    fetchProducts(); // Fetch products when current page, filters, or sort changes
   }, [currentPage, filters, sort]);
 
     useEffect(() => {
@@ -266,7 +266,6 @@ useEffect(() => {
       const createQueryString = createSearchParamsHelper(filters);
       dispatch(resetProducts())
       dispatch(resetPaginations());
-      dispatch(setCurrentPage(1))
       setSearchParams(new URLSearchParams(createQueryString));
 
     }

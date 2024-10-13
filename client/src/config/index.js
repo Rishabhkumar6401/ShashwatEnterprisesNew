@@ -188,10 +188,5 @@ export const addressFormControls = [
     pattern:"[0-9]{10}",
     placeholder: "Enter 10-Digit Phone Number",
   },
-  {
-    label: "Notes",
-    name: "notes",
-    componentType: "textarea",
-    placeholder: "Enter any additional notes",
-  },
+  
 ];

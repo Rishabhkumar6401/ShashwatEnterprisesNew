@@ -6,12 +6,30 @@ const User = require("../../models/User");
 
 // Configure your email transport
 const transporter = nodemailer.createTransport({
-  service: "gmail", // Use your email service
+  service: "gmail", 
   auth: {
-    user: "gozoomtechnologies@gmail.com", // Your email address
-    pass: "qwuyqyxwiystcbhf", // Your email password (consider using environment variables)
+    user: "gozoomtechnologies@gmail.com", 
+    pass: "qwuyqyxwiystcbhf", 
   },
 });
+
+// Utility function to validate cart items
+const validateCartItems = (cartItems) => {
+  if (!Array.isArray(cartItems) || cartItems.length === 0) {
+    return false;
+  }
+  return cartItems.every(
+    (item) =>
+      item.title &&
+      typeof item.title === "string" &&
+      item.quantity &&
+      Number.isInteger(item.quantity) &&
+      item.quantity > 0 &&
+      item.price &&
+      typeof item.price === "number" &&
+      item.price >= 0
+  );
+};
 
 const createOrder = async (req, res) => {
   try {
@@ -20,81 +38,83 @@ const createOrder = async (req, res) => {
       salesmanId,
       cartItems,
       addressInfo,
-      orderStatus,
-      paymentMethod, // Payment method should now be 'COD' only
-      paymentStatus, // This will be 'pending' initially for COD
+      notes,
       totalAmount,
-      orderDate,
-      orderUpdateDate,
       cartId,
-      location: {
-        latitude,
-        longitude,
-      },
+      location: { latitude, longitude },
     } = req.body;
 
-
+    // Validate latitude and longitude
     if (!latitude || !longitude) {
       return res.status(400).json({
         success: false,
-        message: 'Location (latitude and longitude) is required',
+        message: "Location (latitude and longitude) is required",
       });
     }
 
-   
+    // Validate cart items
+    if (!validateCartItems(cartItems)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid cart items. Please check product details.",
+      });
+    }
 
-    // Directly create the order for COD without PayPal logic
+    // Create the order object
     const newlyCreatedOrder = new Order({
       userId,
       salesmanId,
       cartId,
       cartItems,
       addressInfo,
-      orderStatus: 'pending', // Set the initial status as 'pending'
-      paymentMethod: 'COD', // Payment method is now COD
-      paymentStatus: 'pending', // Payment status is 'pending' initially
+      notes,
+      orderStatus: "pending",
+      paymentMethod: "COD",
+      paymentStatus: "pending",
       totalAmount,
-      orderDate,
-      orderUpdateDate,
-      location: {
-        latitude,
-        longitude,
-      },
+      location: { latitude, longitude },
+      orderDate: new Date(),
+      orderUpdateDate: new Date(),
     });
 
     await newlyCreatedOrder.save();
 
     const salesmanDetails = salesmanId
-    ? await User.findOne({ _id: salesmanId, role: "salesman" }) // Fetch user where role is salesman
-    : null;
-    // Determine who placed the order: Salesman or Shop Owner
-const orderPlacedBy = salesmanId && salesmanDetails
-? `Salesman: ${salesmanDetails.userName}, Phone: ${salesmanDetails.phoneNo}`
-: 'Shop Owner';
+      ? await User.findOne({ _id: salesmanId, role: "salesman" })
+      : null;
 
-const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+    const orderPlacedBy = salesmanDetails
+      ? `Salesman: ${salesmanDetails.userName}, Phone: ${salesmanDetails.phoneNo}`
+      : "Shop Owner";
 
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
 
     // Prepare the email content
-    const mailOptions = { 
+    const mailOptions = {
       from: "gozoomtechnologies@gmail.com",
-      to: "shashwatmbd@gmail.com", // Admin email address
+      to: "shashwatmbd@gmail.com",
       subject: `New Order Received - Order ID: ${newlyCreatedOrder._id}`,
       html: `
         <h1>New Order Details</h1>
         <p><strong>Order ID:</strong> ${newlyCreatedOrder._id}</p>
-         <p><strong>Placed by:</strong> ${orderPlacedBy}</p>
+        <p><strong>Placed by:</strong> ${orderPlacedBy}</p>
         <p><strong>Shop Name:</strong> ${addressInfo.shopName}</p>
         <p><strong>Delivery Address:</strong> ${addressInfo.address}</p>
         <p><strong>Contact:</strong> ${addressInfo.phone}</p>
-         <p><strong>Location:</strong> 
+        <p><strong>Notes:</strong> ${notes}</p>
+        <p><strong>Location:</strong> 
           <a href="${googleMapsUrl}" target="_blank">View on Google Maps</a>
         </p>
         <h2>Cart Items</h2>
         <ul>
           ${cartItems
             .map(
-              (item) => `<li>${item.title} - Quantity: ${item.quantity}, Total Price: ₹${item.price * item.quantity}</li>`
+              (item) => `
+                <li>
+                  <strong>Title:</strong> ${item.title} 
+                  <strong>Quantity:</strong> ${item.quantity} 
+                  <strong>Total Price:</strong> ₹${item.price * item.quantity}
+                </li>`
             )
             .join("")}
         </ul>
@@ -107,14 +127,14 @@ const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitud
 
     res.status(201).json({
       success: true,
-      message: 'Order created successfully with COD',
+      message: "Order created successfully with COD",
       orderId: newlyCreatedOrder._id,
     });
   } catch (e) {
     console.log(e);
     res.status(500).json({
       success: false,
-      message: 'Some error occurred while creating the order!',
+      message: "Some error occurred while creating the order!",
     });
   }
 };
@@ -128,21 +148,20 @@ const capturePayment = async (req, res) => {
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: 'Order cannot be found',
+        message: "Order not found!",
       });
     }
 
-    // Update order and payment status for COD after delivery
-    order.paymentStatus = 'paid'; // COD, payment is marked as paid after delivery
-    order.orderStatus = 'confirmed'; // Order confirmed on delivery
+    order.paymentStatus = "paid";
+    order.orderStatus = "confirmed";
 
     for (let item of order.cartItems) {
       let product = await Product.findById(item.productId);
 
-      if (!product) {
-        return res.status(404).json({
+      if (!product || product.totalStock < item.quantity) {
+        return res.status(400).json({
           success: false,
-          message: `Not enough stock for product ${item.title}`,
+          message: `Insufficient stock for product ${item.title}`,
         });
       }
 
@@ -150,22 +169,19 @@ const capturePayment = async (req, res) => {
       await product.save();
     }
 
-    // Remove the cart after the order is confirmed
-    const getCartId = order.cartId;
-    await Cart.findByIdAndDelete(getCartId);
-
+    await Cart.findByIdAndDelete(order.cartId);
     await order.save();
 
     res.status(200).json({
       success: true,
-      message: 'Order confirmed and payment completed for COD',
+      message: "Order confirmed and payment completed for COD",
       data: order,
     });
   } catch (e) {
     console.log(e);
     res.status(500).json({
       success: false,
-      message: 'Some error occurred while capturing payment!',
+      message: "Some error occurred while capturing payment!",
     });
   }
 };
@@ -173,25 +189,21 @@ const capturePayment = async (req, res) => {
 const getAllOrdersByUser = async (req, res) => {
   try {
     const { userId } = req.params;
-
     const orders = await Order.find({ userId });
 
     if (!orders.length) {
       return res.status(404).json({
         success: false,
-        message: 'No orders found!',
+        message: "No orders found!",
       });
     }
 
-    res.status(200).json({
-      success: true,
-      data: orders,
-    });
+    res.status(200).json({ success: true, data: orders });
   } catch (e) {
     console.log(e);
     res.status(500).json({
       success: false,
-      message: 'Some error occurred while fetching orders!',
+      message: "Some error occurred while fetching orders!",
     });
   }
 };
@@ -199,25 +211,21 @@ const getAllOrdersByUser = async (req, res) => {
 const getOrderDetails = async (req, res) => {
   try {
     const { id } = req.params;
-
     const order = await Order.findById(id);
 
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: 'Order not found!',
+        message: "Order not found!",
       });
     }
 
-    res.status(200).json({
-      success: true,
-      data: order,
-    });
+    res.status(200).json({ success: true, data: order });
   } catch (e) {
     console.log(e);
     res.status(500).json({
       success: false,
-      message: 'Some error occurred while fetching order details!',
+      message: "Some error occurred while fetching order details!",
     });
   }
 };

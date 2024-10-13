@@ -22,7 +22,7 @@ const getOrdersBySalesmanId = async (req, res) => {
   const { salesmanId } = req.params;
 
   try {
-    const orders = await Order.find({ salesmanId }); // Adjust this if your order model uses a different reference
+    const orders = await Order.find({salesmanId}).sort({ createdAt: -1 }); // Adjust this if your order model uses a different reference
     res.status(200).json({
       success: true,
       orders,
@@ -51,7 +51,14 @@ const getSalesmanDetails = async (req, res) => {
 // Get all users (shops)
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({ role: "user" }); // Get all users with the 'user' role
+    // Use aggregation to sort user names in a case-insensitive manner
+    const users = await User.aggregate([
+      { $match: { role: "user" } }, // Match users with the 'user' role
+      { $addFields: { lowerUserName: { $toLower: "$userName" } } }, // Add a field for case-insensitive sorting
+      { $sort: { lowerUserName: 1 } }, // Sort by the new lowerUserName field
+      { $project: { lowerUserName: 0 } } // Exclude the lowerUserName field from the results
+    ]);
+    
     res.status(200).json({
       success: true,
       users,
@@ -64,6 +71,7 @@ const getAllUsers = async (req, res) => {
     });
   }
 };
+
 
 // Add a new user (shop)
 const addUser = async (req, res) => {

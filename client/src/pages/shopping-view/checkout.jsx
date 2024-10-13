@@ -13,6 +13,7 @@ import { clearCartFromDB } from "@/store/shop/cart-slice"; // Import the thunk t
 function ShoppingCheckout() {
   const { cartItems } = useSelector((state) => state.shopCart);
   const { user } = useSelector((state) => state.auth);
+  const [notes, setNotes] = useState("");
   const [currentSelectedAddress, setCurrentSelectedAddress] = useState(null);
   const [isLoading, setIsLoading] = useState(false); // Loading state
   const dispatch = useDispatch();
@@ -33,6 +34,8 @@ function ShoppingCheckout() {
       : 0;
 
       function handlePlaceOrder() {
+        if (isLoading) return; // Prevent multiple clicks
+      
         if (cartItems.length === 0) {
           toast({
             title: "Your cart is empty. Please add items to proceed",
@@ -40,6 +43,7 @@ function ShoppingCheckout() {
           });
           return;
         }
+      
         if (currentSelectedAddress === null) {
           toast({
             title: "Please select one address to proceed.",
@@ -48,7 +52,6 @@ function ShoppingCheckout() {
           return;
         }
       
-        // Check if Geolocation API is available
         if (!navigator.geolocation) {
           toast({
             title: "Geolocation is not supported by your browser.",
@@ -57,11 +60,9 @@ function ShoppingCheckout() {
           return;
         }
       
-        // Get the current location of the user
         navigator.geolocation.getCurrentPosition(
           (position) => {
             const { latitude, longitude } = position.coords;
-      
             const salesmanId = localStorage.getItem('salesmanId') || null;
       
             const orderData = {
@@ -82,37 +83,30 @@ function ShoppingCheckout() {
                 shopName: user?.userName,
                 address: currentSelectedAddress?.address,
                 phone: currentSelectedAddress?.phone,
-                notes: currentSelectedAddress?.notes,
               },
+              notes: notes.trim(),
               orderStatus: "pending",
               paymentMethod: "cash-on-delivery",
               paymentStatus: "pending",
               totalAmount: totalCartAmount,
               orderDate: new Date(),
               orderUpdateDate: new Date(),
-              // Add the current location to the order
-              location: {
-                latitude,
-                longitude,
-              },
+              location: { latitude, longitude },
             };
       
-            setIsLoading(true); // Start loading
+            setIsLoading(true); // Disable button immediately
       
-            // Dispatch the order creation request
             dispatch(createNewOrder(orderData)).then((data) => {
-              setIsLoading(false); // End loading
-              console.log(data);
+              setIsLoading(false); // Re-enable button on completion
+      
               if (data?.payload?.success) {
                 toast({
                   title: "Order placed successfully! An email has been sent to the admin.",
                   variant: "success",
                 });
-                // Clear the cart both from the database and state
-                dispatch(clearCartFromDB(user?.id)); // Call the thunk to clear the cart from DB
-                dispatch(clearCart()); // Clear the cart in Redux state
-                // Redirect to Order Success Page
-                navigate("/shop/orderSuccess");
+                dispatch(clearCartFromDB(user?.id)); // Clear cart in DB
+                dispatch(clearCart()); // Clear Redux cart
+                navigate("/shop/orderSuccess"); // Redirect to success page
               } else {
                 toast({
                   title: "Order placement failed. Please try again.",
@@ -129,6 +123,7 @@ function ShoppingCheckout() {
           }
         );
       }
+      
       
 
   return (
@@ -153,6 +148,15 @@ function ShoppingCheckout() {
               <span className="font-bold">₹{totalCartAmount}</span>
             </div>
           </div>
+
+           {/* Notes Input Field */}
+           <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            className="w-full p-2 mt-4 border rounded"
+            placeholder="Add any notes for your order (optional)"
+            rows="4"
+          />
           <div className="mt-4 w-full">
             <Button onClick={handlePlaceOrder} className="w-full" disabled={isLoading}>
               {isLoading ? (

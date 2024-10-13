@@ -2,9 +2,9 @@ const Address = require("../../models/Address");
 
 const addAddress = async (req, res) => {
   try {
-    const { userId, address, phone, notes } = req.body;
+    const { userId, address, phone } = req.body;
 
-    if (!userId || !address || !phone || !notes) {
+    if (!userId || !address || !phone) {
       return res.status(400).json({
         success: false,
         message: "Invalid data provided!",
@@ -14,7 +14,6 @@ const addAddress = async (req, res) => {
     const newlyCreatedAddress = new Address({
       userId,
       address,
-      notes,
       phone,
     });
 
@@ -39,24 +38,29 @@ const fetchAllAddress = async (req, res) => {
     if (!userId) {
       return res.status(400).json({
         success: false,
-        message: "User id is required!",
+        message: "User ID is required!",
       });
     }
 
-    const addressList = await Address.find({ userId });
+    const addressList = await Address.aggregate([
+      { $match: { userId } }, // Filter addresses by userId
+      { $sort: { createdAt: -1 } }, // Sort by newest first (if `createdAt` field exists)
+      { $project: { _id: 1, address: 1, phone: 1, userId: 1 } }, // Select only needed fields
+    ]);
 
     res.status(200).json({
       success: true,
       data: addressList,
     });
   } catch (e) {
-    console.log(e);
+    console.error(e);
     res.status(500).json({
       success: false,
-      message: "Error",
+      message: "Error fetching addresses!",
     });
   }
 };
+
 
 const editAddress = async (req, res) => {
   try {

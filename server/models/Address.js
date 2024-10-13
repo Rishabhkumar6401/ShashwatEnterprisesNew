@@ -4,8 +4,7 @@ const AddressSchema = new mongoose.Schema(
   {
     userId: String,
     address: String,
-    phone: String,
-    notes: String,
+    phone: Number
   },
   { timestamps: true }
 );

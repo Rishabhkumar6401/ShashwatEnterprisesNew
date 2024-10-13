@@ -129,6 +129,7 @@ function ProductFilter({ filters, handleFilter }) {
                       className="flex font-medium items-center gap-2"
                     >
                       <Checkbox
+                       className="w-5 h-5"
                         checked={
                           filters &&
                           Object.keys(filters).length > 0 &&

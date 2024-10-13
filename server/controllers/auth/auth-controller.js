@@ -4,6 +4,7 @@ const User = require("../../models/User");
 const Cart = require("../../models/Cart")
 const unirest = require("unirest");
 const Otp = require("../../models/Otp")
+const Address = require("../../models/Address")
 
 const fast2smsApiKey = "nKnWsfTWXZcASRNn4YZgDoEOw1MDMeFbXc6lOqEoSBYMFk2ejuozZOacsOSz";
 
@@ -38,6 +39,14 @@ const registerUser = async (req, res) => {
       items: [], // Start with an empty cart
     });
     await newCart.save();
+
+    const newAddress = new Address({
+      userId : newUser._id ,
+      address : userAddress,
+      phone : phoneNo,
+
+    })
+    await newAddress.save();
 
     res.status(200).json({
       success: true,

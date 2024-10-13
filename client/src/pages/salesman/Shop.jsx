@@ -108,13 +108,13 @@ const Shop = () => {
             <div className="mb-5 ">
                 <h2 className="text-lg font-bold">Filter by Beats:</h2>
                 {beats.map((beat) => (
-                    <div key={beat._id} className="flex items-center mb-2"> {/* Added flex and margin bottom */}
-                    <label className="text-sm font-medium"> {/* Increased font size and made it bold */}
+                    <div key={beat._id} className="flex items-center mb-2 "> {/* Added flex and margin bottom */}
+                    <label className="text-sm font-medium "> {/* Increased font size and made it bold */}
                         <input
                             type="checkbox"
                             checked={selectedBeats.includes(beat.beatName)}
                             onChange={() => handleBeatChange(beat.beatName)}
-                            className="mr-2" // Added margin right for spacing
+                            className="mr-2 w-4 h-4" // Added margin right for spacing
                         />
                         {beat.beatName}
                     </label>

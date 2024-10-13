@@ -121,7 +121,7 @@ function AdminOrderDetailsView({ orderDetails }) {
               <span>Shop Name: {orderDetails?.addressInfo?.shopName}</span>
               <span>Shop Address: {orderDetails?.addressInfo?.address}</span>
               <span>Shop Phone No: {orderDetails?.addressInfo?.phone}</span>
-              <h3>Note: {orderDetails?.addressInfo?.notes}</h3>
+              <h3>Note: {orderDetails?.notes}</h3>
             </div>
 
             {/* Display Latitude and Longitude if available */}
