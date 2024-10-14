@@ -129,6 +129,7 @@ const editProduct = async (req, res) => {
       description,
       category,
       brand,
+      subcategory,
       price,
       salePrice,
       averageReview,
@@ -147,6 +148,7 @@ const editProduct = async (req, res) => {
     if (description !== undefined) findProduct.description = description;
     if (category !== undefined) findProduct.category = category;
     if (brand !== undefined) findProduct.brand = brand;
+    if (category !== undefined) findProduct.subcategory = subcategory;
     if (price !== undefined) findProduct.price = price === "" ? 0 : price;
     if (salePrice !== undefined) findProduct.salePrice = salePrice === "" ? 0 : salePrice;
     if (image !== undefined) findProduct.image = image;
