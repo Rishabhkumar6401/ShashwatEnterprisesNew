@@ -2,9 +2,10 @@ const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
 
 cloudinary.config({
-  cloud_name: "draanh89c",
-  api_key: "333863789587677",
-  api_secret: "ej5qAnaqSfPZ1daFOwUdFWfsMzY",
+  cloud_name: "dywlgg8ve",
+  api_key: "814344168926352",
+  api_secret: "eX3sH1CZzkb2ThqhAiV_ACbEM_M",
+  secure: true // Ensures the returned URL is HTTPS
 });
 
 const storage = new multer.memoryStorage();
@@ -15,7 +16,8 @@ async function imageUploadUtil(file) {
     transformation: [
       { width: 800, height: 600, crop: "limit" }, // Resize to a maximum of 800x600
       { quality: "auto", fetch_format: "auto" } // Automatic quality and format
-    ]
+    ],
+    secure: true // Ensures the returned URL is HTTPS
   });
 
   return result;
