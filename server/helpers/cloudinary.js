@@ -20,7 +20,7 @@ async function imageUploadUtil(file) {
     secure: true // Ensures the returned URL is HTTPS
   });
 
-  return result;
+  return result.secure_url;
 }
 
 
