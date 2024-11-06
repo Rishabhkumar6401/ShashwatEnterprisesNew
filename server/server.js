@@ -29,8 +29,8 @@ mongoose
 const app = express();
 const PORT = 5000;
 
-// Middleware to allow all origins with CORS
-app.use(cors({ origin: "*" }));
+
+
 
 app.use(cookieParser());
 app.use(express.json());
