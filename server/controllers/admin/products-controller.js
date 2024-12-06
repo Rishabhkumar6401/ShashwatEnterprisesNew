@@ -63,17 +63,31 @@ const addProduct = async (req, res) => {
 };
 
 // Fetch all products with pagination
+// Fetch all products with pagination and search functionality
 const fetchAllProducts = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query; // Default to page 1 and limit 10
+    const { page = 1, limit = 12, searchQuery = '' } = req.query; // Default to page 1, limit 10, and empty searchQuery
     const skip = (page - 1) * limit;
 
-    const listOfProducts = await Product.find({})
+    // Create the search criteria object if searchQuery exists
+    const searchCriteria = searchQuery
+      ? {
+          $or: [
+            { title: { $regex: searchQuery, $options: 'i' } }, // Case-insensitive search for title
+            { subcategory: { $regex: searchQuery, $options: 'i' } }, // Case-insensitive search for subcategory
+            { brand: { $regex: searchQuery, $options: 'i' } }, // Case-insensitive search for brand
+          ],
+        }
+      : {}; // If no searchQuery, fetch all products
+
+    // Fetch products based on search query and pagination
+    const listOfProducts = await Product.find(searchCriteria)
       .sort({ createdAt: -1 }) // Sort by createdAt in descending order
       .skip(skip)
       .limit(Number(limit));
 
-    const totalProducts = await Product.countDocuments();
+    // Get the total count of products matching the search criteria
+    const totalProducts = await Product.countDocuments(searchCriteria);
 
     res.status(200).json({
       success: true,
@@ -85,10 +99,11 @@ const fetchAllProducts = async (req, res) => {
     console.error(e);
     res.status(500).json({
       success: false,
-      message: "An error occurred while fetching products.",
+      message: 'An error occurred while fetching products.',
     });
   }
 };
+
 
 const fetchAllOutOfStockProducts = async (req, res) => {
   try {
@@ -194,11 +209,55 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+// In the products-controller.js
+
+const searchProduct = async (req, res) => {
+  try {
+    const { searchQuery } = req.params;  // Extract search query from URL params
+    const { page = 1, limit = 10 } = req.query;  // Default pagination values: page 1, limit 10
+    const skip = (page - 1) * limit;
+
+    // Build the search criteria based on the query string
+    const searchCriteria = {
+      $or: [
+        { title: { $regex: searchQuery, $options: "i" } },  // Case-insensitive search for title
+        { category: { $regex: searchQuery, $options: "i" } },  // Case-insensitive search for category
+        { brand: { $regex: searchQuery, $options: "i" } }  // Case-insensitive search for brand
+      ]
+    };
+
+    // Fetch products matching the search criteria
+    const listOfProducts = await Product.find(searchCriteria)
+      .sort({ createdAt: -1 })  // Sort by creation date in descending order
+      .skip(skip)
+      .limit(Number(limit));  // Paginate the results
+
+    // Get the total count of products that match the search criteria
+    const totalProducts = await Product.countDocuments(searchCriteria);
+
+    // Return the response with the matching products and pagination info
+    res.status(200).json({
+      success: true,
+      data: listOfProducts,
+      totalPages: Math.ceil(totalProducts / limit),  // Calculate total pages
+      currentPage: Number(page),  // Current page number
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while searching for products.",
+    });
+  }
+};
+
 module.exports = {
   handleImageUpload,
   addProduct,
-  fetchAllProducts,
   editProduct,
+  fetchAllProducts,
   deleteProduct,
   fetchAllOutOfStockProducts,
+  searchProduct,  // Export the searchProduct function
 };
+

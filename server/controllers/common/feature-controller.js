@@ -44,7 +44,7 @@ const getFeatureImages = async (req, res) => {
 
 const deleteFeatureImage = async (req, res) => {
   try {
-    const { id } = req.params; 
+    const { id } = req.params; // Assuming the id is passed as a route parameter
 
     const deletedImage = await Feature.findByIdAndDelete(id);
 

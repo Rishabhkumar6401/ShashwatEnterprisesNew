@@ -20,6 +20,9 @@ async function imageUploadUtil(file) {
     secure: true // Ensures the returned URL is HTTPS
   });
 
+   // Debugging: Log the result to check the URL
+   console.log("Cloudinary upload result:", result);
+
   return result;
 }
 

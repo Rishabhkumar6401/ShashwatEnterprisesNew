@@ -60,12 +60,32 @@ const createOrder = async (req, res) => {
       });
     }
 
+    // Fetch product details for each item in the cart
+    const detailedCartItems = await Promise.all(
+      cartItems.map(async (item) => {
+        const product = await Product.findById(item.productId).select(
+          "brand subcategory image title price"
+        );
+        if (!product) {
+          throw new Error(`Product with ID ${item.productId} not found.`);
+        }
+        return {
+          ...item,
+          brand: product.brand,
+          subcategory: product.subcategory,
+          image: product.image,
+          title: product.title,
+          price: product.price,
+        };
+      })
+    );
+
     // Create the order object
     const newlyCreatedOrder = new Order({
       userId,
       salesmanId,
       cartId,
-      cartItems,
+      cartItems: detailedCartItems,
       addressInfo,
       notes,
       orderStatus: "pending",
@@ -105,19 +125,38 @@ const createOrder = async (req, res) => {
         <p><strong>Location:</strong> 
           <a href="${googleMapsUrl}" target="_blank">View on Google Maps</a>
         </p>
-        <h2>Cart Items</h2>
-        <ul>
-          ${cartItems
-            .map(
-              (item) => `
-                <li>
-                  <strong>Title:</strong> ${item.title} 
-                  <strong>Quantity:</strong> ${item.quantity} 
-                  <strong>Total Price:</strong> ₹${item.price * item.quantity}
-                </li>`
-            )
-            .join("")}
-        </ul>
+        <h2>Ordered Items</h2>
+        <table border="1" style="border-collapse: collapse; width: 100%; text-align: left;">
+          <thead>
+            <tr>
+              <th style="padding: 8px;">S.No</th>
+              <th style="padding: 8px;">Image</th>
+              <th style="padding: 8px;">Title</th>
+              <th style="padding: 8px;">Brand</th>
+              <th style="padding: 8px;">Sub Category</th>
+              <th style="padding: 8px;">Price (₹)</th>
+              <th style="padding: 8px;">Quantity</th>
+              <th style="padding: 8px;">Total Price (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${detailedCartItems
+              .map(
+                (item, index) => `
+                <tr>
+                  <td style="padding: 8px;">${index + 1}</td>
+                  <td style="padding: 8px;"><img src="${item.image}" alt="${item.title}" style="width: 50px; height: 50px;" /></td>
+                  <td style="padding: 8px;">${item.title}</td>
+                  <td style="padding: 8px;">${item.brand}</td>
+                  <td style="padding: 8px;">${item.subcategory}</td>
+                  <td style="padding: 8px;">${item.price}</td>
+                  <td style="padding: 8px;">${item.quantity}</td>
+                  <td style="padding: 8px;">₹${item.price * item.quantity}</td>
+                </tr>`
+              )
+              .join("")}
+          </tbody>
+        </table>
         <p>Thank you for using our service @Shashwat Enterprises!</p>
       `,
     };
@@ -131,13 +170,14 @@ const createOrder = async (req, res) => {
       orderId: newlyCreatedOrder._id,
     });
   } catch (e) {
-    console.log(e);
+    console.error(e);
     res.status(500).json({
       success: false,
       message: "Some error occurred while creating the order!",
     });
   }
 };
+
 
 const capturePayment = async (req, res) => {
   try {
