@@ -6,6 +6,7 @@ const {
   authMiddleware,
   requestOtp,
   verifyOtp,
+  changePassword,
 } = require("../../controllers/auth/auth-controller");
 
 const router = express.Router();
@@ -15,6 +16,7 @@ router.post("/login", loginUser);
 router.post("/logout", logoutUser);
 router.post("/request-otp", requestOtp);
 router.post("/verify-otp", verifyOtp);
+router.post("/change-password", changePassword);
 router.get("/check-auth", authMiddleware, (req, res) => {
   const user = req.user;
   res.status(200).json({

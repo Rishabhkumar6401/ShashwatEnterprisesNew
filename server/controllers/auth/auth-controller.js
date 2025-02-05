@@ -230,5 +230,62 @@ const authMiddleware = async (req, res, next) => {
   }
 };
 
+// Add this new controller function
+const changePassword = async (req, res) => {
+  const { phoneNo, oldPassword, newPassword } = req.body;
+
+  try {
+    // Find user
+    const user = await User.findOne({ phoneNo });
+    if (!user) {
+      return res.json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Verify old password
+    if (user.password !== oldPassword) {
+      return res.json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    try {
+      // Update password using findOneAndUpdate
+      const updatedUser = await User.findOneAndUpdate(
+        { phoneNo },
+        { password: newPassword },
+        { new: true } // This option returns the updated document
+      );
+
+      if (!updatedUser) {
+        return res.json({
+          success: false,
+          message: "Failed to update password",
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "Password updated successfully",
+      });
+    } catch (updateError) {
+      console.error("Error updating password:", updateError);
+      res.status(500).json({
+        success: false,
+        message: "Error updating password in database",
+      });
+    }
+  } catch (error) {
+    console.error("Error in change password:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while changing password",
+    });
+  }
+};
+
 module.exports = { registerUser, loginUser, logoutUser, authMiddleware,requestOtp,
-  verifyOtp, };
+  verifyOtp, changePassword, };
