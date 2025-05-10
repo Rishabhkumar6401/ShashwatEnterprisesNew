@@ -113,7 +113,7 @@ const createOrder = async (req, res) => {
     const mailOptions = {
       from: "gozoomtechnologies@gmail.com",
       to: "shashwatmbd@gmail.com",
-      subject: `New Order Received - Order ID: ${newlyCreatedOrder._id}`,
+      subject: `New Order Received - Shop Name: ${addressInfo.shopName}`,
       html: `
         <h1>New Order Details</h1>
         <p><strong>Order ID:</strong> ${newlyCreatedOrder._id}</p>
